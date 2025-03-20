@@ -93,8 +93,6 @@ Sub SendEventsToGoogleCalendar_Simple()
         eventCount = eventCount + 1
         
 
-NextRow:
-    Next i
  
     ws.Cells(1, 20).Value = eventJson
   
@@ -119,6 +117,7 @@ Debug.Print "API Response: " & http.responseText
     ' 簡易確認用のメッセージ
     MsgBox "Googleカレンダーにデータを送信しました！", vbInformation
     Exit Sub ' 正常終了
+    Next i
 
 ' エラーハンドリング
 ErrorHandler:
