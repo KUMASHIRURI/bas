@@ -1,5 +1,5 @@
-Attribute VB_Name = "これを大事に"
-Sub SendEventsToGoogleCalendar_Simple()
+Attribute VB_Name = "Module4"
+Sub SendEventsToGoogleCalendar_001()
 
     Dim ws As Worksheet
     Set ws = ThisWorkbook.Sheets("予定") ' シート名を適宜変更
@@ -14,37 +14,34 @@ Sub SendEventsToGoogleCalendar_Simple()
     apiUrl = "https://script.google.com/macros/s/AKfycby-LpWIEFhpGAl5Rb-kErgwLB95s1xBBHq1rbzrwArS0cjvEqN2B1_DNkcq9avjV9KO/exec" ' GASのエンドポイントURLを入れる
 
     Dim json As String
+    Dim eventsData As String
 
     Dim i As Integer
+    Dim eventCount As Integer
+    eventCount = 0 ' イベントの数をカウント（カンマ処理に使用）
 
     For i = 2 To lastRow
+    On Error Resume Next ' エラー発生時のハンドリング
+       
         Dim startDate As String, startTime As String, endDate As String, endTime As String
         Dim title As String, description As String, location As String
         Dim isAllDay As Boolean
         Dim eventJson As String
-        Dim close1 As String
-        Dim close2 As String
+   
+ '   eventsData = "{""events"":["
+
 
         ' 各列のデータ取得（Null や Empty を防ぐ）
         startDate = Trim(CStr(ws.Cells(i, 1).Value)) ' 開始日付 (A列)
-        'startTime = Trim(CStr(ws.Cells(i, 2).Value)) ' 開始時刻 (B列)
         startTime = WorksheetFunction.Text(ws.Cells(i, 2).Value, "HH:mm:ss")
-         ' 開始時刻 (B列)
-         ' 開始時刻 (B列)
-        
         endDate = Trim(CStr(ws.Cells(i, 3).Value))   ' 終了日付 (C列)
-        'endTime = Trim(CStr(ws.Cells(i, 4).Value))   ' 終了時刻 (D列)
-        endTime = WorksheetFunction.Text(ws.Cells(i, 4).Value, "HH:mm:ss")           ' 終了時刻 (D列)
-   ' 終了時刻 (D列)
+        endTime = WorksheetFunction.Text(ws.Cells(i, 4).Value, "HH:mm:ss")        
         title = Trim(CStr(ws.Cells(i, 6).Value))     ' 予定詳細 (F列)
         description = Trim(CStr(ws.Cells(i, 7).Value)) ' メモ (G列)
         description = Replace(description, vbCrLf, "\n")
         description = Replace(description, vbLf, "\n")
         description = Replace(description, vbCr, "\n")
         location = Trim(CStr(ws.Cells(i, 9).Value))  ' 施設 (I列)
-
-        ' 空白行はスキップ
-        If title = "" Then GoTo NextRow
 
         ' 日付と時刻のフォーマット修正
         If IsDate(startDate) Then startDate = Format(CDate(startDate), "yyyy-mm-dd") Else startDate = ""
@@ -75,31 +72,32 @@ Sub SendEventsToGoogleCalendar_Simple()
             eventJson = eventJson & """isAllDay"":false"
         End If
 
-        close1 = "}"
-        eventJson = eventJson & close1 ' JSON の閉じ
+'        close1 = "}"
+        eventJson = eventJson & "}" ' JSON の閉じ
 
-      
-
+        ' 最初のイベントではカンマなし、それ以降はカンマをつける
+  '      eventsData = eventsData & eventJson
  
-    ws.Cells(1, 20).Value = eventJson
-  
+   ' eventsData = eventsData & "]}" ' JSONの閉じ
+
+    ws.Cells(i, 21).Value = eventjson
 
 ' ?? イミディエイトウィンドウに `Sending JSON:` を出力
-Debug.Print "Sending JSON: " & eventsData
+Debug.Print "Sending JSON: " & eventjson
 
     ' API リクエスト送信
     With http
         .Open "POST", apiUrl, False
         .SetRequestHeader "Content-Type", "application/json"
-        .Send eventJson
+        .Send eventjson
     End With
+
+ On Error GoTo 0
+    Next i
 
 ' ?? API のレスポンスも確認
 Debug.Print "API Response: " & http.responseText
 
-    
-
-    Next i
-
 End Sub
+
 
